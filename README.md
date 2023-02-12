@@ -1,2 +1,2 @@
-# todo-app
-A CLI todo list app with encryption
+# Tidy
+A simple CLI todo-list for the terminal
