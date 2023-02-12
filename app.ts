@@ -8,9 +8,11 @@ const sequelize = new Sequelize({
 });
 
 const TODO_ENTRY = sequelize.define('Todo_Items', {
-    name: DataTypes.STRING,
-    content: DataTypes.STRING
+    title: DataTypes.STRING,
+    priority: DataTypes.STRING
 });
+
+const PRIORITIES = ["low","medium","high"];
 
 async function connect(){
     try {
@@ -22,6 +24,36 @@ async function connect(){
     }
 }
 
+async function add(title: string, priority: string){
+    if(!title.length) {
+        console.log("Invalid title length. Make sure title is not empty");
+        process.exit(1);
+    }
+
+    if(PRIORITIES.indexOf(priority) === -1){
+        console.log(`Invalid priority: ${priority}`);
+        process.exit(1);
+    }
+
+    const check = await TODO_ENTRY.findOne({where: {title: title}});
+
+    if(check){
+        console.log(`Entry already exists: ${title}`);
+        process.exit(1);
+    }
+
+    const item = await TODO_ENTRY.create({title: title, priority: priority});
+
+}
+
+async function sync(){
+    await sequelize.sync().then(()=>{
+        console.log("Saved data successfully");
+    }).catch((error:Error)=>{
+        console.error(`An error occurred: ${error}`);
+    });
+}
+
 async function main (){
     await connect();
     console.log(args);
@@ -31,7 +63,22 @@ async function main (){
         process.exit(1);
     }
 
-    
+    console.log(args);
+
+    const operation = args[0];
+
+    switch(operation){
+        case "add":
+            // args[1] is title, args[2] is priority
+            add(args[1],args[2]);
+            break;
+        
+        default:
+            console.log(`Invalid operation: ${operation}`);
+            process.exit(1);
+            break;
+    }
+    await sync();
 }
 
 main();
